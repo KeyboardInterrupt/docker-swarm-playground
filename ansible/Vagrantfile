@@ -1,0 +1,39 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  default = { :box => "geerlingguy/ubuntu1804", :memory => 1024, :cpus => 2 }
+
+  boxes = [
+    { :name => "docker01", :ip => "192.168.29.11" },
+    { :name => "docker02", :ip => "192.168.29.12" },
+    { :name => "docker03", :ip => "192.168.29.13" }
+  ]
+  groups = {
+      "docker-swarm" => ["docker01", "docker02", "docker03"]
+    }
+
+  boxes.each do |opts|
+    config.vm.define opts[:name] do |config|
+      config.vm.box = opts[:box] || default[:box]
+      config.vm.hostname = opts[:name]
+      config.vm.network "private_network", ip: opts[:ip]
+      config.vm.provider :virtualbox do |v|
+        v.memory = opts[:memory] || default[:memory]
+        v.cpus = opts[:cpus] || default[:cpus]
+      end
+      config.vm.provider :libvirt do |v|
+        v.memory = opts[:memory] || default[:memory]
+        v.cpus = opts[:cpus] || default[:cpus]
+      end
+      if opts[:name] == boxes.last[:name]
+        config.vm.provision "ansible" do |ansible|
+          ansible.playbook = "site.yml"
+          ansible.limit = "all"
+          ansible.groups = groups || {}
+        end
+      end
+    end
+  end
+end

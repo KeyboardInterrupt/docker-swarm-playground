@@ -1,0 +1,41 @@
+- hosts: docker-swarm
+  become: yes
+  roles:
+    - geerlingguy.docker
+  pre_tasks:
+    - name: install python and pip
+      apt:
+        name:
+          - python
+          - python-pip
+        state: present
+        update_cache: yes
+    - name: install docker via pip
+      pip:
+        name: docker
+        state: present
+
+- hosts: docker01
+  become: yes
+  tasks:
+    - name: Turn first Node into Overmind
+      docker_swarm:
+        state: present
+        advertise_addr: "{{ ansible_enp0s8['ipv4']['address'] }}"
+      register: swarm_master_info
+
+    - name: Debugging - show "swarm_master_info"
+      debug:
+        var: swarm_master_info
+
+- hosts:
+    - docker02
+    - docker03
+  become: yes
+  tasks:
+    - name: Let the other two Nodes join the Swarm!
+      docker_swarm:
+        state: join
+        advertise_addr: "{{ ansible_enp0s8['ipv4']['address'] }}"
+        join_token: "{{ hostvars['docker01']['swarm_master_info']['swarm_facts']['JoinTokens']['Worker'] }}"
+        remote_addrs: [ "{{hostvars['docker01']['ansible_enp0s8']['ipv4']['address']}}" ]
