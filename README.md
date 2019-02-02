@@ -24,7 +24,7 @@ ansible-galaxy install -r requirements.yml -p roles
 vagrant up
 ```
 
-This will bring up three Ubuntu18.04 VirtualBox Machines named: `docker01`, `docker02` and `docker03` which form a Docker Swarm with `docker01` being the initial Manager Node.
+This will bring up three Ubuntu 18.04 VirtualBox Machines named: `docker01`, `docker02` and `docker03` which form a Docker Swarm with `docker01` being the initial Manager Node.
 
 ## Usage
 
