@@ -29,3 +29,7 @@ This will bring up three Ubuntu 18.04 VirtualBox Machines named: `docker01`, `do
 ## Usage
 
 To play around with the Swarm and deploy services just connect to the Manager Node via `vagrant ssh docker01`
+
+Or you can i.E. use ansible to spin up Portainer, managing your swarm. to do so run `ansible-playbook -i inventories/vagrant/hosts portainer.yml` inside the `./ansible/` directory.
+
+After that, and after waiting for a short while, you should be able to access Portainer on any Nodes IP address on Port 9000 (i.E. [http://192.168.29.11:9000](http://192.168.29.11:9000)) via your web browser.
