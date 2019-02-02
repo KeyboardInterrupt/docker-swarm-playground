@@ -1,2 +1,4 @@
 .vagrant/
 ansible/roles/geerlingguy.docker/
+
+venv/
