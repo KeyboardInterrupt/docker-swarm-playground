@@ -22,11 +22,11 @@
       docker_swarm:
         state: present
         advertise_addr: "{{ ansible_enp0s8['ipv4']['address'] }}"
-      register: swarm_master_info
+      register: swarm_manager_info
 
-    - name: Debugging - show "swarm_master_info"
+    - name: Debugging - show "swarm_manager_info"
       debug:
-        var: swarm_master_info
+        var: swarm_manager_info
 
 - hosts:
     - docker02
@@ -37,5 +37,8 @@
       docker_swarm:
         state: join
         advertise_addr: "{{ ansible_enp0s8['ipv4']['address'] }}"
-        join_token: "{{ hostvars['docker01']['swarm_master_info']['swarm_facts']['JoinTokens']['Worker'] }}"
+        join_token: "{{ hostvars['docker01']['swarm_manager_info']['swarm_facts']['JoinTokens']['Worker'] }}"
         remote_addrs: [ "{{hostvars['docker01']['ansible_enp0s8']['ipv4']['address']}}" ]
+
+- name: Install portainer into Swarm
+  import_playbook: portainer.yml

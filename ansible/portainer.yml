@@ -1,0 +1,69 @@
+---
+
+- name: Deploy Portainer components
+  hosts: docker01
+  become: true
+  tasks:
+    - name: Create portainer network
+      docker_network:
+        state: present
+        name: portainer_agent
+        driver: overlay
+    - name: Deploy portainer agent
+      docker_swarm_service:
+        name: portainer_agent
+        user:
+        mode: global
+        image: portainer/agent:latest
+        networks:
+          - portainer_agent
+        constraints:
+          - "node.platform.os == linux"
+        env:
+          - AGENT_CLUSTER_ADDR=tasks.portainer_agent
+          - LOG_LEVEL=debug
+        mounts:
+          - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+          - source: /var/lib/docker/volumes
+            target: /var/lib/docker/volumes
+            type: bind
+        publish:
+          - published_port: 9001
+            target_port: 9001
+            protocol: tcp
+            type: host
+        update_order: start-first
+        update_parallelism: 2
+        update_delay: 5
+        update_monitor: 500
+    - name: Deploy portainer server
+      docker_swarm_service:
+        name: portainer_server
+        user:
+        mode: replicated
+        replicas: 1
+        image: portainer/portainer:latest
+        args:
+          - "-H"
+          - "unix:///var/run/docker.sock"
+        networks:
+          - portainer_agent
+        mounts:
+          - source: /vagrant/docker_bind_volumes/portainer/data
+            target: /data
+            type: bind
+          - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+        constraints:
+          - "node.role == manager"
+        publish:
+          - published_port: 9000
+            target_port: 9000
+            protocol: tcp
+        update_order: start-first
+        update_parallelism: 2
+        update_delay: 5
+        update_monitor: 500
