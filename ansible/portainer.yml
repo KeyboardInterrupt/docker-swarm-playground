@@ -51,9 +51,6 @@
         networks:
           - portainer_agent
         mounts:
-          - source: /vagrant/docker_bind_volumes/portainer/data
-            target: /data
-            type: bind
           - source: /var/run/docker.sock
             target: /var/run/docker.sock
             type: bind
